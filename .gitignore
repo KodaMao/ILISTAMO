@@ -1,0 +1,34 @@
+# Node.js dependencies
+node_modules/
+
+# Next.js build output
+.next/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS/Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+
+# Build output
+out/
+
+# Misc
+*.log
+*.tmp
+
+# Ignore backup files
+*.ilistamo
