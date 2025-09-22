@@ -21,9 +21,9 @@ See `src/types.ts` for exact interfaces: Client, Project, Estimate/EstimateItem,
 - lucide-react, @radix-ui/react-select
 
 ## 4. Predefined Quote Templates
-- Modern Clean — implemented via jsPDF (light header band, centered title, light grid table)
-- Classic Professional — implemented via jsPDF (two-column header with rule, black borders, grey head)
-- Bold & Branded — implemented via jsPDF (brand color block, brand-accent totals)
+- Modern Clean — light header band with centered title; dark header row with white text; striped body rows; left-aligned acceptance (signature + date)
+- Classic Professional — two-column header with rule; black borders and gray head row; numbered terms; centered signature and date
+- Bold & Branded — brand-colored header block (logo optional); BILL TO/SHIP TO boxes and QUOTE INFO; proposed services table (with Item # column); brand-accented TOTAL DUE and authorization box
 
 ## 5. Feature Set & Workflow
 - MyCompany: dedicated page to set company name, address, contact, brand color (with live preview), logo (PNG/base64), and preparer name. Accessible from main navigation.
@@ -44,7 +44,7 @@ See `/src/components/**` tree in the repository for the mapping. Initial impleme
 Create Project + Estimate → Create Quote → Mark Up & Analyze → Export & Send → Track Status → Backup
 
 ---
-Version: 0.4 (MyCompany page, PDF branding, navigation)
+Version: 0.5 (PDF templates refined: brand color usage, headers/boxes, footers)
 
 ## Implementation notes
 - SSR safety: localForage usage is client-only via lazy imports; no SSR access to storage.
@@ -146,11 +146,47 @@ Edge cases:
 ---
 
 ## Export/PDF templates (jsPDF)
-- Modern Clean: light gray header band, centered title, light grid table; subtle styling.
-- Classic Professional: two-column header with bold rule; black borders and gray head row; totals block.
-- Bold & Branded: large brand-colored header block; emphasized client title; brand-colored grand total.
+
+Common
+- Brand color: companyInfo.brandColor is used across templates (accents, headers, totals).
+- Logo: companyInfo.logoBase64 (PNG) is rendered when provided.
+- Valid Until is computed from createdAt + expiryDays.
+- Table columns: Description, Qty, Unit, Unit Price, Line Total (Bold adds an Item # column as the first column).
+- Currency formatting uses locale with 2 decimals.
+
+Modern Clean
+- Typography: Helvetica; margins ≈ 0.25in (18pt).
+- Header: light gray band behind a centered title; subtle brand underline under the title.
+- Meta: Quote Number, Date, Valid Until under the header; To/From blocks separated by a light rule.
+- Table: dark header row (#2d3748) with white text; striped body rows (#f7fafc); Qty/Unit centered; prices right-aligned.
+- Totals: Subtotal, Discount, Tax, and bold TOTAL label; values right-aligned.
+- Terms: bulleted list (if present).
+- Acceptance: left-aligned signature and date lines.
+- Footer: centered, muted company info.
+
+Classic Professional
+- Typography: Times; margins ≈ 0.5in (36pt).
+- Header: company at top with address/contact; bold rule/accent line.
+- Blocks: CUSTOMER, QUOTATION DETAILS (two-column rows), DESCRIPTION OF SERVICES header before the items.
+- Table: grid with black borders; gray head row; body in dark gray text.
+- Totals: Subtotal, Discount, Tax; GRAND TOTAL emphasized in dark blue.
+- Terms: numbered list (if present).
+- Acceptance: centered Signature and Date lines.
+- Footer: light divider; centered “Thank You” line and muted company info.
+
+Bold & Branded
+- Typography: Helvetica; margins ≈ 0.75in (54pt).
+- Header: large brand-colored banner; optional logo at left; company name; “QUOTATION” right-aligned in banner.
+- Info boxes: dynamic-height BILL TO and SHIP TO boxes on the left; QUOTE INFO box on the right (Quote #, Date, Valid Until, Prepared by, Project).
+- Section: “PROPOSED SERVICES” title before table.
+- Table: header filled with brand color, white text; alternating body stripes using a lightened brand color; columns include Item #.
+- Totals: Subtotal, Discount, Tax; TOTAL DUE and amount in brand color.
+- Authorization: boxed area with lines for Authorized Signature, Print Name, Title, and Date; optional Terms text in the left column.
+- Footer: line + “Contact Information” label; centered muted company/address/contact; no hardcoded payment terms string.
+
 Notes:
-- Line-item tables and totals are implemented; footers (page numbers/signatures), embedded logos, and richer formatting are on the roadmap.
+- All PDFs render non-empty previews and support download/open via ExportaMo.
+- Future polish: page numbers, richer footers, localized currency/date.
 
 ---
 

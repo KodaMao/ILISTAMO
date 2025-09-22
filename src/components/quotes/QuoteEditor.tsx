@@ -36,7 +36,7 @@ export function QuoteEditor({ quoteId }: { quoteId: string }) {
 
       {/* Analytics on top */}
       <div className="border rounded p-3">
-        <h3 className="font-medium mb-3">Analytics</h3>
+  <h3 className="font-medium mb-3">Overview</h3>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="p-2 rounded border">
             <div className="text-gray-600">Total Amount</div>
@@ -107,40 +107,100 @@ export function QuoteEditor({ quoteId }: { quoteId: string }) {
         </div>
       </div>
 
-      {/* Items */}
+      {/* Items grouped by category */}
       <div className="border rounded p-3">
         <h3 className="font-medium mb-2">Items</h3>
-        <div className="grid grid-cols-7 gap-2 text-xs font-medium text-gray-600 mb-1">
-          <div className="col-span-2">Description</div>
-          <div>Unit</div>
-          <div>Qty</div>
-          <div>Base / Marked Unit</div>
-          <div className="text-right">Line Total</div>
-          <div className="w-14 text-right">Actions</div>
-        </div>
-        {quote.items.map((it, idx) => {
-          const effectiveUnit = it.unitPrice * (1 + (quote.markupPercent || 0) / 100);
-          return (
-            <div key={it.id} className="grid grid-cols-7 gap-2 items-center mb-2">
-              <input className="col-span-2 border px-2 py-1 rounded" value={it.description} onChange={(e) => { const items = [...quote.items]; items[idx] = { ...it, description: e.target.value }; updateQuoteItems(quote.id, items); }} />
-              <input className="border px-2 py-1 rounded" value={it.unit} onChange={(e) => { const items = [...quote.items]; items[idx] = { ...it, unit: e.target.value }; updateQuoteItems(quote.id, items); }} />
-              <input className="border px-2 py-1 rounded" type="number" min={0} step={1} value={it.quantity} onChange={(e) => { const items = [...quote.items]; items[idx] = { ...it, quantity: Number(e.target.value) }; updateQuoteItems(quote.id, items); }} />
-              <div className="flex items-center gap-2">
-                <input className="w-full border px-2 py-1 rounded" type="number" min={0} step={0.01} value={it.unitPrice} onChange={(e) => { const items = [...quote.items]; items[idx] = { ...it, unitPrice: Number(e.target.value) }; updateQuoteItems(quote.id, items); }} />
-                <span className="text-xs text-gray-600 whitespace-nowrap">= {fmt.format(effectiveUnit)}</span>
+        {(() => {
+          // Group items by category
+          const itemsByCat: Record<string, typeof quote.items> = {};
+          quote.items.forEach((it) => {
+            const cat = it.category?.trim() || "Items";
+            if (!itemsByCat[cat]) itemsByCat[cat] = [];
+            itemsByCat[cat].push(it);
+          });
+          return Object.entries(itemsByCat).map(([cat, items]) => {
+            const subtotal = items.reduce((sum, it) => {
+              const effectiveUnit = it.unitPrice * (1 + (quote.markupPercent || 0) / 100);
+              return sum + it.quantity * effectiveUnit;
+            }, 0);
+            return (
+              <div key={cat} className="mb-6">
+                <div className="font-semibold text-base mb-2 mt-2 text-center">{cat}</div>
+                <div className="grid grid-cols-7 gap-2 text-xs font-medium text-gray-600 mb-1">
+                  <div className="col-span-2 flex items-center">Description</div>
+                  <div className="flex items-center">Unit</div>
+                  <div className="flex items-center">Qty</div>
+                  <div className="flex items-center">Base / Marked Unit</div>
+                  <div className="flex items-center justify-end">Line Total</div>
+                  <div className="flex items-center justify-end">Actions</div>
+                </div>
+                {items.map((it, idx) => {
+                  const effectiveUnit = it.unitPrice * (1 + (quote.markupPercent || 0) / 100);
+                  const globalIdx = quote.items.findIndex(qi => qi.id === it.id);
+                  return (
+                    <div key={it.id} className="grid grid-cols-7 gap-2 items-center mb-2 min-h-[40px]">
+                      <input className="col-span-2 border px-2 py-1 rounded" value={it.description} onChange={(e) => { const items = [...quote.items]; items[globalIdx] = { ...it, description: e.target.value }; updateQuoteItems(quote.id, items); }} />
+                      <input
+                        className="border px-2 py-1 rounded"
+                        value={it.unit}
+                        placeholder="Unit"
+                        onChange={e => {
+                          const items = [...quote.items];
+                          items[globalIdx] = { ...it, unit: e.target.value };
+                          updateQuoteItems(quote.id, items);
+                        }}
+                      />
+                      <input
+                        className="border px-2 py-1 rounded"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={it.quantity}
+                        onChange={e => {
+                          const items = [...quote.items];
+                          items[globalIdx] = { ...it, quantity: Number(e.target.value) };
+                          updateQuoteItems(quote.id, items);
+                        }}
+                      />
+                      <div className="flex items-center gap-2">
+                        <input className="w-full border px-2 py-1 rounded" type="number" min={0} step={0.01} value={it.unitPrice} onChange={(e) => { const items = [...quote.items]; items[globalIdx] = { ...it, unitPrice: Number(e.target.value) }; updateQuoteItems(quote.id, items); }} />
+                        <span className="text-xs text-gray-600 whitespace-nowrap">= {fmt.format(effectiveUnit)}</span>
+                      </div>
+                      <div className="text-right tabular-nums">{fmt.format(it.quantity * effectiveUnit)}</div>
+                      <div className="flex justify-end items-center h-full">
+                        <button
+                          className="p-1 rounded-full border border-transparent hover:border-red-200 hover:bg-red-50 text-red-600 flex items-center justify-center"
+                          style={{ width: 28, height: 28 }}
+                          title="Delete item"
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this item?')) {
+                              const items = quote.items.filter((_, i) => i !== globalIdx);
+                              updateQuoteItems(quote.id, items);
+                            }
+                          }}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-between items-center mt-2">
+                  <div className="text-sm font-medium">
+                    <span className="mr-2">{cat} Subtotal:</span>
+                    <span className="tabular-nums">{fmt.format(subtotal)}</span>
+                  </div>
+                  <button className="px-3 py-1 rounded border inline-flex items-center gap-1 hover:bg-gray-50" onClick={() => {
+                    const items = [...quote.items, { ...newItem(), category: cat }];
+                    updateQuoteItems(quote.id, items);
+                  }}>
+                    <Plus size={16} /> Add item
+                  </button>
+                </div>
               </div>
-              <div className="text-right tabular-nums">{fmt.format(it.quantity * effectiveUnit)}</div>
-              <div className="text-right">
-                <button className="px-2 py-1 rounded border inline-flex items-center gap-1 hover:bg-red-50 text-red-600" onClick={() => {
-                  const items = quote.items.filter((_, i) => i !== idx);
-                  updateQuoteItems(quote.id, items);
-                }}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          });
+        })()}
         <div className="mt-2 flex justify-between items-center">
           <button className="px-3 py-1 rounded border inline-flex items-center gap-1 hover:bg-gray-50" onClick={() => {
             const items = [...quote.items, newItem()];

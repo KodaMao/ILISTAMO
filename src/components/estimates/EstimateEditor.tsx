@@ -8,6 +8,7 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
   const router = useRouter();
   const estimate = useStore((s) => s.estimates.find((e) => e.id === estimateId));
   const updateEstimateItems = useStore((s) => s.updateEstimateItems);
+  const updateEstimate = useStore((s) => s.updateEstimate);
   const createQuoteFromEstimate = useStore((s) => s.createQuoteFromEstimate);
   if (!estimate) return <div className="text-red-600">Estimate not found</div>;
   const setItems = (items: EstimateItem[]) => updateEstimateItems(estimateId, items);
@@ -23,8 +24,14 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
   }
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <button className="px-3 py-1 rounded bg-blue-600 text-white inline-flex items-center gap-1" onClick={() => {
+      <div className="mb-4 flex justify-between items-center">
+        <input
+          className="border px-2 py-1 rounded text-lg font-semibold w-full max-w-md"
+          value={estimate.name}
+          onChange={e => updateEstimate(estimateId, { name: e.target.value })}
+          placeholder="Estimate Title"
+        />
+        <button className="px-3 py-1 rounded bg-blue-600 text-white inline-flex items-center gap-1 ml-4" onClick={() => {
           const id = createQuoteFromEstimate(estimateId) as string | null;
           if (id) router.push(`/quotes/${id}`);
         }}><FilePlus2 size={16} /> Create Quote from Estimate</button>

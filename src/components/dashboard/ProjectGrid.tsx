@@ -18,15 +18,41 @@ export function ProjectGrid({ projects, quotes, clients, estimates }: { projects
   );
 }
 
+import { CheckCircle2, XCircle, Send, FileText } from 'lucide-react';
+
 function renderStatusBadge(project: Project, quotes: Quote[], estimates?: Estimate[]) {
   const estIds = estimates?.filter(e => e.projectId === project.id).map(e => e.id) || [];
   const q = quotes.find(q => estIds.includes(q.estimateId));
   const status = q?.status || 'draft';
-  const classes = {
-    draft: 'bg-gray-100 text-gray-700',
-    sent: 'bg-blue-100 text-blue-700',
-    accepted: 'bg-green-100 text-green-700',
-    declined: 'bg-red-100 text-red-700',
+  const badgeMap = {
+    draft: {
+      icon: <FileText size={14} className="mr-1" />,
+      label: 'Draft',
+      className: 'bg-gray-50 text-gray-800 border border-gray-200',
+    },
+    sent: {
+      icon: <Send size={14} className="mr-1" />,
+      label: 'Sent',
+      className: 'bg-blue-50 text-blue-800 border border-blue-200',
+    },
+    accepted: {
+      icon: <CheckCircle2 size={14} className="mr-1" />,
+      label: 'Accepted',
+      className: 'bg-green-50 text-green-800 border border-green-200',
+    },
+    declined: {
+      icon: <XCircle size={14} className="mr-1" />,
+      label: 'Declined',
+      className: 'bg-red-50 text-red-800 border border-red-200',
+    },
   } as const;
-  return <span className={`px-2 py-0.5 rounded font-medium ${classes[status]}`}>{status}</span>;
+  const badge = badgeMap[status];
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded font-medium text-xs ${badge.className}`}
+      title={badge.label}
+    >
+      {badge.icon}
+      {badge.label}
+    </span>
+  );
 }

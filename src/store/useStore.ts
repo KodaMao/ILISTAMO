@@ -14,6 +14,7 @@ type Actions = {
   deleteClient: (id: string) => boolean;
   addProject: (p: Omit<Project, 'id'>) => string;
   addEstimate: (e: Omit<Estimate, 'id' | 'createdAt'>) => string;
+  updateEstimate: (id: string, partial: Partial<Estimate>) => void;
   updateEstimateItems: (id: string, items: EstimateItem[]) => void;
   createQuoteFromEstimate: (estimateId: string, name?: string) => string | null;
   updateQuote: (id: string, partial: Partial<Quote>) => void;
@@ -100,6 +101,11 @@ export const useStore = create<State & Actions>((set: (partial: Partial<State>) 
     set({ estimates });
     saveData({ clients: get().clients, projects: get().projects, estimates, quotes: get().quotes, settings: get().settings });
     return id;
+  },
+  updateEstimate: (id: string, partial: Partial<Estimate>) => {
+    const estimates = get().estimates.map((est: Estimate) => (est.id === id ? { ...est, ...partial } : est));
+    set({ estimates });
+    saveData({ clients: get().clients, projects: get().projects, estimates, quotes: get().quotes, settings: get().settings });
   },
   updateEstimateItems: (id: string, items: EstimateItem[]) => {
     const estimates = get().estimates.map((est: Estimate) => (est.id === id ? { ...est, items } : est));
