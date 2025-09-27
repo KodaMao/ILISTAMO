@@ -1,93 +1,90 @@
+
 # IListaMo Specification (Guide)
 
 This document captures the core product spec. Keep it in sync with the codebase as features evolve.
 
-## 1. Core Concept & Value Proposition
-IListaMo is a fully client-side web application with a two-stage workflow:
-- Estimate: internal project costs (itemized)
-- Quote: client-ready proposal with markups, discounts, taxes, and real-time profitability
-- Pipeline Tracking: statuses (draft, sent, accepted, declined)
-- All data stored locally via localForage, with import/export for backup
+# IListaMo Specification
 
-## 2. Data Structure (TypeScript)
-See `src/types.ts` for exact interfaces: Client, Project, Estimate/EstimateItem, Quote/QuoteItem, CompanyInfo, AppSettings, Template, ProfitMetrics, AppData.
+## Overview
 
-## 3. Technology Stack (2025)
-- Next.js 15, React 18, TypeScript 5
-- Tailwind CSS 3.4
-- Zustand 4.5
-- localforage 1.10
-- jsPDF + jspdf-autotable (PDF generation)
-- lucide-react, @radix-ui/react-select
+IListaMo is a business management tool for managing clients, estimates, and quotes. Projects have been completely removed from the workflow. Users can create and track estimates directly for clients, and generate quotes from estimates. The dashboard provides a business pipeline overview, summary analytics, and quick access to recent activity.
 
-## 4. Predefined Quote Templates
-- Modern Clean — light header band with centered title; dark header row with white text; striped body rows; left-aligned acceptance (signature + date)
-- Classic Professional — two-column header with rule; black borders and gray head row; numbered terms; centered signature and date
-- Bold & Branded — brand-colored header block (logo optional); BILL TO/SHIP TO boxes and QUOTE INFO; proposed services table (with Item # column); brand-accented TOTAL DUE and authorization box
+## Key Features
 
-## 5. Feature Set & Workflow
-- MyCompany: dedicated page to set company name, address, contact, brand color (with live preview), logo (PNG/base64), and preparer name. Accessible from main navigation.
-- Company info and branding are used in all PDF exports (header, color, logo, preparer).
-- Navigation: main bar includes link to MyCompany with live brand color dot.
-- Dashboard: project cards, status badges, search/filter, New Project
-- Project Detail: Estimates tab, Quotes tab, New Estimate
-- Estimate Editor: items (desc, category, qty, unit, cost per unit), per-row Line Total and Subtotal, Save, Create Quote from Estimate
-- Quote Editor: items (left) and analytics/settings (right); Save; ExportaMo opens preview/download modal
-- ExportaMo: select template → generate PDF → in-modal preview → download or open → optional mark as "sent" (implemented)
-- Clients: table with edit/delete (with delete protection when projects exist), add new client
-- Data Backup: export/import `.ilistamo` (import overwrites current data; show success toast)
+- Client management
+- Estimate creation (per client)
+- Quote generation (per estimate)
+- Dashboard with summary, analytics, and recent activity
+- Export to PDF
 
-## 6. Component Architecture
-See `/src/components/**` tree in the repository for the mapping. Initial implementation may provide thin placeholders; flesh out progressively.
+## Data Model
 
-## 7. User Workflow
-Create Project + Estimate → Create Quote → Mark Up & Analyze → Export & Send → Track Status → Backup
+### Client
+- id
+- name
+- contactInfo
 
----
-Version: 0.5 (PDF templates refined: brand color usage, headers/boxes, footers)
+### Estimate
+- id
+- clientId
+- items
+- total
+- createdAt
 
-## Implementation notes
-- SSR safety: localForage usage is client-only via lazy imports; no SSR access to storage.
-- Client/server boundary: Zustand store used only within "use client" components. Server pages render thin client wrappers.
-- Routing: typedRoutes enabled; use standard `params` in server components and `useParams()` in client-only pages.
-- Future enhancements: richer PDF tables and totals layout, status badges and filters on dashboard, delete protection for clients with projects.
+### Quote
+- id
+- estimateId
+- price
+- status
+- createdAt
 
----
+## Workflow
 
-## Detailed requirements and acceptance criteria
+1. User creates a client.
+2. User creates an estimate for a client.
+3. User generates a quote from an estimate (must select an estimate).
+4. User can export quotes/estimates as PDF.
 
-### Dashboard (/)
-- Project cards show project name, client name, and a status badge reflecting latest quote status for that project.
-- Search bar filters by project name, client name, or status (case-insensitive substring match).
-- New Project button opens a modal to create a project (select client, name, optional description).
-Acceptance:
-- Typing in search immediately filters visible project cards.
-- Creating a project adds it to state and persists to localForage.
+## Dashboard
 
-### Project Detail (/projects/[projectId])
-- Tabs: "Estimates" and "Quotes".
-- Estimates tab lists estimates for the project, including each estimate's total cost; New Estimate button creates a blank estimate (with 0 items) and routes to estimate editor.
-- Quotes tab lists quotes for estimates under this project; shows each quote's grand total and an inline status selector.
-Acceptance:
-- Creating a new estimate adds it to state with timestamps; navigation to its editor succeeds.
-- Changing a quote status updates in store and reflects on dashboard.
+The dashboard provides:
+- Summary statistics (total clients, estimates, quotes, profit analytics)
+- Recent activity (latest estimates and quotes)
+- Quick links to create new clients, estimates, and quotes
+- Search and filter for clients, estimates, and quotes
 
-### Estimate Editor (/projects/[projectId]/estimates/[estimateId])
-- Editable table: Description, Category, Qty (number >= 0), Unit (text), Cost Per Unit (currency >= 0).
-- Read-only Line Total per row (Qty × Cost/Unit) and Subtotal below.
-- Add and remove line items with buttons.
-- Save Estimate persists items.
-- Create Quote from Estimate creates a quote with items mapped from estimate (unitPrice defaults to costPerUnit) and navigates to the quote editor.
-Acceptance:
-- Validation prevents negative numbers; empty description allowed but highlighted.
-- Numeric inputs use min/step (Qty step=1; money step=0.01).
-- Create Quote produces a new quote with default tax/expiry from settings.
+## UI/UX
 
-### Quote Editor (/quotes/[quoteId])
-- Company info and preparer are shown in the PDF header (name, address, contact, logo, brand color, prepared by).
-- Brand color is reflected in all PDF templates.
-- Layout: Items (left) and Analytics + Settings (right).
-- Items: edit description, unit, qty, unit price; add/remove items; read-only Line Total per row; Subtotal displayed under the list.
+- Sidebar navigation: Dashboard, Clients, Estimates, Quotes, Settings
+- Modal forms for creating clients, estimates, and quotes
+- Tables for listing clients, estimates, and quotes
+- Dashboard summary cards, recent activity, and quick links
+- Estimate editor: checkboxes for item selection, select-all per category, and 'Clear All' button for removing all items
+
+## Export
+
+- Export estimates and quotes to PDF using customizable templates
+
+## Settings
+
+- Company info, branding, and PDF template selection
+
+## Tech Stack
+
+- Next.js, React, TypeScript, Zustand, Tailwind CSS, jsPDF
+
+## Changelog
+
+- 2024-06-01: Initial spec
+- 2025-09-27: Projects removed, dashboard and workflow updated to be client/estimate/quote-centric
+- 2025-09-27: Estimate editor UI: item selection checkboxes, select-all per category, and 'Clear All' button added
+
+## Future Improvements
+
+- User authentication
+- Team collaboration
+- Invoice management
+- More analytics
 - Analytics: shows totals (see Calculations), live-updated.
 - Settings: status selector (draft/sent/accepted/declined), discount (amount or %), tax rate, notes, company info (name, address, brandColor, logoBase64 optional), quote number, expiry days.
 - ExportaMo: opens a modal to choose a template, renders a preview, and lets the user download/open; includes an action to set status to "sent".
@@ -98,7 +95,7 @@ Acceptance:
 
 ### Clients (/clients)
 - Table of clients with edit and delete buttons.
-- Add New Client creates a client with a generated id.
+- Add New Client via modal form (fields: name, contact name, email, address, company).
 - Delete protected if any project references the client.
 Acceptance:
 - Attempting to delete a referenced client shows a message and leaves data intact.
@@ -131,8 +128,7 @@ Edge cases:
 
 ## Data constraints
 - Client.name: required
-- Project.clientId: must reference existing client
-- Estimate.projectId: must reference existing project
+- Estimate.clientId: must reference existing client
 - Quote.estimateId: must reference existing estimate
 - Quantities and monetary values: >= 0
 - Settings: defaultTaxRate [0..100], defaultExpiryDays >= 0
@@ -202,11 +198,10 @@ MIME: application/json
 Top-level object matches `AppData` exactly:
 ```
 {
-	"clients": [...],
-	"projects": [...],
-	"estimates": [...],
-	"quotes": [...],
-	"settings": { "defaultTaxRate": number, "defaultExpiryDays": number }
+  "clients": [...],
+  "estimates": [...],
+  "quotes": [...],
+  "settings": { "defaultTaxRate": number, "defaultExpiryDays": number }
 }
 ```
 
