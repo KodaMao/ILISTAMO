@@ -12,7 +12,7 @@ export default function EstimatesPage() {
 	// Sort estimates by createdAt descending
 	const sortedEstimates = [...estimates].sort((a, b) => b.createdAt - a.createdAt);
 
-	function getClientName(estimate: { clientId: string; projectId?: string }): string {
+	function getClientName(estimate: { clientId: string }): string {
 		const client = clients.find(c => c.id === estimate.clientId);
 		return client ? client.name : "Unknown";
 	}

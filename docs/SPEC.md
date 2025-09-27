@@ -1,13 +1,19 @@
 
-## IListaMo App Specification (Updated September 27, 2025)
+## IListaMo App Specification (Updated September 28, 2025)
+
 
 ### Workflow Overview
-- The app is client/estimate/quote-centric. Projects are fully removed.
+- The app is client/estimate/quote-centric. All project-related code, UI, and references have been fully removed for a simpler, more focused workflow.
 - Users create estimates for clients, then generate quotes based on those estimates.
 - Quotes are fully editable, with per-item markup, category grouping, and analytics.
 
+### Dashboard Summary
+- The dashboard displays summary cards for quotes by status, total accepted quotes, and client count.
+- **Total Accepted Quotes** now reflects the sum of all accepted quotes' grand totals, including markup, discount, and tax, using the same calculation as the quote view (via `computeQuoteMetrics`).
+
+
 ### Quote Editor UI
-- The quote editor page features:
+The quote editor page features:
   - Editable quote number as the main title (left-aligned)
   - Subheading: "Based on estimate: [estimate name]"
   - Grouped items by category, with per-category subtotals
@@ -24,13 +30,14 @@
 - Export works without project data; only quote, estimate, and client are required
 
 ### Other Features
-- All references to project are removed from UI and logic
+- All references to project are removed from UI, logic, and codebase
 - Quote ID is never shown to the user
 - All notifications and error messages are user-friendly
 
 ---
-_This spec reflects the state of the app as of the 'before-refactor' branch._
+_This spec reflects the state of the app as of the September 28, 2025 refactor. All project-related code and UI have been removed. The app is now fully focused on clients, estimates, and quotes._
 - Dashboard summary cards, recent activity, and quick links
+  - Dashboard summary values (including accepted quotes total) are always in sync with the latest quote status and calculations.
 - Estimate editor: checkboxes for item selection, select-all per category, and 'Clear All' button for removing all items
 
 ## Export

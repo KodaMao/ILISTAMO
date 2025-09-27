@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const GeneratePDF = dynamic(() => import('./GeneratePDF').then(m => m.GeneratePDF), { ssr: false });
 
 export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open: boolean; onClose: () => void }) {
-  const { quotes, estimates, projects, clients, setQuoteStatus } = useStore();
+  const { quotes, estimates, clients, setQuoteStatus } = useStore();
   const [busy, setBusy] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);

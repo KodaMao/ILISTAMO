@@ -1,23 +1,32 @@
 "use client";
 import { useStore } from "@/store/useStore";
+import { useMemo } from "react";
+import { computeQuoteMetrics } from '@/lib/calculations';
 
 export function DashboardSummary() {
-  const { estimates, quotes, clients } = useStore();
-
-  // Status counts for quotes
-  const statusCounts = quotes.reduce(
-    (acc, q) => {
-      acc[q.status] = (acc[q.status] || 0) + 1;
-      return acc;
-    },
-    { draft: 0, sent: 0, accepted: 0, declined: 0 } as Record<string, number>
-  );
-
-  // Profit snapshot (accepted quotes)
-  const acceptedQuotes = quotes.filter(q => q.status === "accepted");
-  const totalAccepted = acceptedQuotes.reduce((sum, q) => sum + q.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0), 0);
-  // For profit, you may want to compare to estimate cost if available
-  // Here, we just show total for simplicity
+  // Subscribe to quotes and force re-render on any status change
+  const quotes = useStore(s => s.quotes);
+  const clients = useStore(s => s.clients);
+  const estimates = useStore(s => s.estimates);
+  // Memoize status counts and accepted total for performance
+  const { statusCounts, totalAccepted } = useMemo(() => {
+    const statusCounts = quotes.reduce(
+      (acc, q) => {
+        acc[q.status] = (acc[q.status] || 0) + 1;
+        return acc;
+      },
+      { draft: 0, sent: 0, accepted: 0, declined: 0 } as Record<string, number>
+    );
+    // Use computeQuoteMetrics for each accepted quote
+    const acceptedQuotes = quotes.filter(q => q.status === "accepted");
+    const totalAccepted = acceptedQuotes.reduce((sum, q) => {
+      // Find the matching estimate for accurate cost/markup
+      const estimate = estimates.find(e => e.id === q.estimateId);
+      const metrics = computeQuoteMetrics(q, estimate);
+      return sum + metrics.grandTotal;
+    }, 0);
+    return { statusCounts, totalAccepted };
+  }, [JSON.stringify(quotes), JSON.stringify(estimates)]);
 
   return (
     <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">

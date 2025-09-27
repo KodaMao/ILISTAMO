@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import EstimateEditor from "@/components/estimates/EstimateEditor";
+import { EstimateEditor } from "@/components/estimates/EstimateEditor";
 
 export default function EstimatePage() {
   const { estimateId } = useParams();

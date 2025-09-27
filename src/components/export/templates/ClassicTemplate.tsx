@@ -1,7 +1,7 @@
-import type { Client, Estimate, Project, Quote } from '@/types';
+import type { Client, Estimate, Quote } from '@/types';
 import { computeQuoteMetrics } from '@/lib/calculations';
 
-export function ClassicTemplate({ primitives, quote, estimate, client }: { primitives: any; quote: Quote; estimate: Estimate; project: Project; client: Client }) {
+export function ClassicTemplate({ primitives, quote, estimate, client }: { primitives: any; quote: Quote; estimate: Estimate; client: Client }) {
   const { Text, View, StyleSheet } = primitives;
   const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', marginBottom: 8 },

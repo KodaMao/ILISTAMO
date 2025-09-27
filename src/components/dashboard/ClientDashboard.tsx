@@ -5,9 +5,8 @@ import { useStore } from '@/store/useStore';
 import { DashboardSummary } from './DashboardSummary';
 import Link from 'next/link';
 
-export function ClientDashboard() {
+export function ClientDashboard({ search }: { search: string }) {
   const { quotes, clients, estimates, init, initialized } = useStore();
-  const [search, setSearch] = useState("");
   useEffect(() => {
     if (!initialized) void init();
   }, [initialized, init]);
@@ -36,12 +35,6 @@ export function ClientDashboard() {
     <div className="mt-6">
       <DashboardSummary />
       <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <input
-          className="border rounded px-3 py-2 w-full md:w-64"
-          placeholder="Search by client, estimate, or quote..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
         <div className="flex gap-2">
           <Link href="/clients" className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Add Client</Link>
           <Link href="/estimates" className="px-4 py-2 rounded bg-blue-600 text-white">New Estimate</Link>

@@ -1,8 +1,7 @@
 'use client';
 import { useStore } from '@/store/useStore';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { EstimateItem } from '@/types';
 import { FilePlus2, Plus, Trash2, Copy, ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -17,12 +16,34 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showSaved, setShowSaved] = useState(false);
+  // Ref for category checkboxes (for indeterminate state)
+  const catRefs = useRef<{ [cat: string]: HTMLInputElement | null }>({});
+
   useEffect(() => {
     if (showSaved) {
       const t = setTimeout(() => setShowSaved(false), 2000);
       return () => clearTimeout(t);
     }
   }, [showSaved]);
+
+  // Set indeterminate state for each category checkbox
+  useEffect(() => {
+    if (!estimate) return;
+    const itemsByCategory: { [cat: string]: EstimateItem[] } = {};
+    for (const item of estimate.items) {
+      const cat = item.category?.trim() || 'Uncategorized';
+      if (!itemsByCategory[cat]) itemsByCategory[cat] = [];
+      itemsByCategory[cat].push(item);
+    }
+    Object.keys(itemsByCategory).forEach(cat => {
+      const ref = catRefs.current[cat];
+      if (!ref) return;
+      const allChecked = itemsByCategory[cat].every(it => selected.includes(it.id)) && itemsByCategory[cat].length > 0;
+      const someChecked = itemsByCategory[cat].some(it => selected.includes(it.id));
+      ref.indeterminate = !allChecked && someChecked;
+    });
+  }, [estimate, selected]);
+
   if (!estimate) return <div className="text-red-600">Estimate not found</div>;
   const setItems = (items: EstimateItem[]) => updateEstimateItems(estimateId, items);
   function newItem(): EstimateItem {
@@ -93,8 +114,8 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
                           {/* Select all in this category */}
                           <input
                             type="checkbox"
+                            ref={el => { catRefs.current[cat] = el; }}
                             checked={itemsByCategory[cat].every(it => selected.includes(it.id)) && itemsByCategory[cat].length > 0}
-                            indeterminate={itemsByCategory[cat].some(it => selected.includes(it.id)) && !itemsByCategory[cat].every(it => selected.includes(it.id))}
                             onChange={e => {
                               const checked = e.target.checked;
                               const ids = itemsByCategory[cat].map(it => it.id);
@@ -143,8 +164,17 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
                       );
                     })}
                   </div>
-                  <div className="flex justify-end px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-t">
-                    Subtotal: {catSubtotal.toFixed(2)}
+                  <div className="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-t">
+                    <span>Subtotal: {catSubtotal.toFixed(2)}</span>
+                    <button
+                      className="px-2 py-1 rounded border inline-flex items-center gap-1 hover:bg-gray-50"
+                      onClick={() => {
+                        const items = [...estimate.items, { ...newItem(), category: cat }];
+                        setItems(items);
+                      }}
+                    >
+                      <Plus size={14} /> Add Item to {cat}
+                    </button>
                   </div>
                 </div>
               )}
@@ -161,12 +191,6 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
       <div className="mt-6 flex flex-wrap gap-6 justify-center items-center">
         {/* Item actions */}
         <div className="flex gap-2">
-          <button className="px-3 py-1 rounded border inline-flex items-center gap-1 hover:bg-gray-50" onClick={() => {
-            const items = [...estimate.items, newItem()];
-            setItems(items);
-          }}>
-            <Plus size={16} /> Add Item
-          </button>
           <button className="px-3 py-1 rounded border inline-flex items-center gap-1 hover:bg-gray-50 disabled:opacity-50" disabled={selected.length === 0} onClick={handleCopySelected}>
             <Copy size={16} /> Copy Item{selected.length > 1 ? 's' : ''}
           </button>
@@ -193,10 +217,20 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
             updateEstimate(estimateId, { ...estimate });
             setShowSaved(true);
           }}>Save</button>
-          <button className="px-3 py-1 rounded bg-blue-600 text-white inline-flex items-center gap-1" onClick={() => {
-            const id = createQuoteFromEstimate(estimateId) as string | null;
-            if (id) router.push(`/quotes/${id}`);
-          }}><FilePlus2 size={16} /> Create Quote from Estimate</button>
+          <button
+            className="px-3 py-1 rounded bg-blue-600 text-white inline-flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={() => {
+              if (!estimate.items || estimate.items.length === 0) return;
+              const id = createQuoteFromEstimate(estimateId) as string | null;
+              if (id) router.push(`/quotes/${id}`);
+            }}
+            disabled={!estimate.items || estimate.items.length === 0}
+          >
+            <FilePlus2 size={16} /> Create Quote from Estimate
+          </button>
+          {(!estimate.items || estimate.items.length === 0) && (
+            <div className="text-red-600 text-sm mt-2">Add at least one item to this estimate before creating a quote.</div>
+          )}
         </div>
         {showSaved && (
           <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-2 rounded shadow-lg z-50 transition-all">Estimate saved!</div>
@@ -231,5 +265,3 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
     </div>
   );
 }
-
-export default EstimateEditor;

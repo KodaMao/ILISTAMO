@@ -1,3 +1,4 @@
+
 import { QuoteEditor } from '@/components/quotes/QuoteEditor';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';

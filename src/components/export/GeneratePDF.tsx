@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { Client, Estimate, Project, Quote } from '@/types';
+import type { Client, Estimate, Quote } from '@/types';
 import { computeQuoteMetrics } from '@/lib/calculations';
 import { useStore } from '@/store/useStore';
 
@@ -14,11 +14,10 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-export function GeneratePDF({ templateId, quote, estimate, project, client, onDone }: {
+export function GeneratePDF({ templateId, quote, estimate, client, onDone }: {
   templateId: string;
   quote: Quote;
   estimate: Estimate;
-  project?: Project;
   client: Client;
   onDone: (blob: Blob) => void;
 }) {
@@ -273,7 +272,6 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
             `Date: ${new Date(quote.createdAt).toLocaleDateString()}`,
             `Valid Until: ${validUntil}`,
             preparerName ? `Prepared by: ${preparerName}` : undefined,
-            project?.name ? `Project: ${project.name}` : undefined,
           ].filter(Boolean) as string[];
           const metaLinesWrapped = metaRaw.flatMap((t) => doc.splitTextToSize(t, innerW));
           const metaH = Math.max(72, 32 + metaLinesWrapped.length * lineH + 12);
@@ -599,7 +597,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
 
     void run();
     return () => { cancelled = true; };
-  }, [templateId, quote, estimate, project, client, onDone]);
+  }, [templateId, quote, estimate, client, onDone]);
 
   return null;
 }

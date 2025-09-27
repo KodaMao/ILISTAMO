@@ -1,6 +1,7 @@
 import './globals.css';
 import Link from 'next/link';
 import { Navigation } from '@/components/layout/Navigation';
+import { FeedbackButton } from '@/components/FeedbackButton';
 import type { ReactNode } from 'react';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
