@@ -1,3 +1,4 @@
-export default function ProjectDetailPage() {
+
+export default function ProjectsPage() {
   return <div className="p-8 text-gray-500">This page is no longer available. Projects have been removed from the workflow.</div>;
 }

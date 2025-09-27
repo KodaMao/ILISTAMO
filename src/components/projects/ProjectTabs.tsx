@@ -16,7 +16,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
   }, [initialized, init]);
 
   const projectEstimates = useMemo(
-    () => estimates.filter((e: Estimate) => e.projectId === projectId).sort((a, b) => b.createdAt - a.createdAt),
+  () => estimates.filter((e: Estimate) => e.projectId === projectId).sort((a, b) => b.createdAt - a.createdAt),
     [estimates, projectId]
   );
   const estimateIdSet = useMemo(() => new Set(projectEstimates.map((e) => e.id)), [projectEstimates]);

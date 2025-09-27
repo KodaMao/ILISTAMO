@@ -6,12 +6,11 @@ import { useParams } from 'next/navigation';
 
 export default function QuotePrintPage() {
   const { quoteId } = useParams<{ quoteId: string }>();
-  const { quotes, estimates, projects, clients, initialized, init } = useStore();
+  const { quotes, estimates, clients, initialized, init } = useStore();
   useEffect(() => { if (!initialized) void init(); }, [initialized, init]);
   const quote = quotes.find(q => q.id === quoteId);
   const estimate = useMemo(() => quote ? estimates.find(e => e.id === quote.estimateId) : undefined, [quote, estimates]);
-  const project = useMemo(() => estimate ? projects.find(p => p.id === estimate.projectId) : undefined, [estimate, projects]);
-  const client = useMemo(() => project ? clients.find(c => c.id === project.clientId) : undefined, [project, clients]);
+  const client = useMemo(() => estimate ? clients.find(c => c.id === estimate.clientId) : undefined, [estimate, clients]);
   const m = quote && estimate ? computeQuoteMetrics(quote, estimate) : null;
 
   useEffect(() => {
@@ -19,7 +18,7 @@ export default function QuotePrintPage() {
     return () => clearTimeout(id);
   }, []);
 
-  if (!quote || !estimate || !project || !client || !m) {
+  if (!quote || !estimate || !client || !m) {
     return <div style={{ padding: 24 }}>Missing data. Close and try again.</div>;
   }
 

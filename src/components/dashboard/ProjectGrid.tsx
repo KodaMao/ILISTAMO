@@ -21,32 +21,53 @@ export function ProjectGrid({ projects, quotes, clients, estimates }: { projects
 import { CheckCircle2, XCircle, Send, FileText } from 'lucide-react';
 
 function renderStatusBadge(project: Project, quotes: Quote[], estimates?: Estimate[]) {
-  const estIds = estimates?.filter(e => e.projectId === project.id).map(e => e.id) || [];
+  const ests = estimates?.filter(e => e.projectId === project.id) || [];
+  const estIds = ests.map(e => e.id);
   const q = quotes.find(q => estIds.includes(q.estimateId));
-  const status = q?.status || 'draft';
+  let status: string;
+  if (!ests.length) {
+    status = 'noestimate';
+  } else if (!q) {
+    status = 'estimate';
+  } else if (q.status === 'draft') {
+    status = 'forapproval';
+  } else if (q.status === 'accepted') {
+    status = 'completed';
+  } else if (q.status === 'declined') {
+    status = 'closed';
+  } else if (q.status === 'sent') {
+    status = 'forapproval';
+  } else {
+    status = q.status;
+  }
   const badgeMap = {
-    draft: {
+    noestimate: {
       icon: <FileText size={14} className="mr-1" />,
-      label: 'Draft',
+      label: 'No Estimate',
       className: 'bg-gray-50 text-gray-800 border border-gray-200',
     },
-    sent: {
+    estimate: {
+      icon: <FileText size={14} className="mr-1" />,
+      label: 'Estimate',
+      className: 'bg-yellow-50 text-yellow-800 border border-yellow-200',
+    },
+    forapproval: {
       icon: <Send size={14} className="mr-1" />,
-      label: 'Sent',
+      label: 'For Approval',
       className: 'bg-blue-50 text-blue-800 border border-blue-200',
     },
-    accepted: {
-      icon: <CheckCircle2 size={14} className="mr-1" />,
-      label: 'Accepted',
-      className: 'bg-green-50 text-green-800 border border-green-200',
-    },
-    declined: {
+    closed: {
       icon: <XCircle size={14} className="mr-1" />,
-      label: 'Declined',
+      label: 'Closed',
       className: 'bg-red-50 text-red-800 border border-red-200',
     },
+    completed: {
+      icon: <CheckCircle2 size={14} className="mr-1" />,
+      label: 'Completed',
+      className: 'bg-green-50 text-green-800 border border-green-200',
+    },
   } as const;
-  const badge = badgeMap[status];
+  const badge = badgeMap[status as keyof typeof badgeMap] || badgeMap.noestimate;
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded font-medium text-xs ${badge.className}`}
       title={badge.label}

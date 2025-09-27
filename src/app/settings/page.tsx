@@ -1,52 +1,75 @@
+
 "use client";
-import { useStore } from '@/store/useStore';
-import { useState } from 'react';
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { useStore } from "@/store/useStore";
+import { Download, Upload } from "lucide-react";
+
+function BackupRestoreSettings() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const { exportData, importData, clearAll } = useStore();
+  return (
+    <div className="flex flex-col gap-2 mt-2">
+      <button className="px-4 py-2 rounded border inline-flex items-center gap-2 hover:bg-gray-50" onClick={() => {
+        const json = exportData();
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ilistamo-${Date.now()}.ilistamo`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }}><Download size={20} /> Backup</button>
+      <input ref={fileRef} type="file" className="hidden" accept=".ilistamo,application/json" onChange={async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const text = await f.text();
+        await importData(text);
+        setToast("Data imported successfully");
+        setTimeout(() => setToast(null), 2500);
+      }} />
+      <button className="px-4 py-2 rounded border inline-flex items-center gap-2 hover:bg-gray-50" onClick={() => fileRef.current?.click()}><Upload size={20} /> Restore</button>
+      <button className="px-4 py-2 rounded border inline-flex items-center gap-2 hover:bg-red-100 text-red-700 font-semibold mt-4" onClick={() => setShowWarning(true)}>
+        Clear All Data
+      </button>
+      {showWarning && (
+        <div className="mt-2 p-4 bg-red-50 border border-red-300 rounded">
+          <div className="font-bold text-red-700 mb-2">Warning: This will permanently delete all your data!</div>
+          <div className="mb-2 text-sm text-red-600">This action cannot be undone. Make sure you have backed up your data first.</div>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 rounded bg-red-600 text-white font-semibold" onClick={() => { clearAll(); setShowWarning(false); setToast("All data cleared."); }}>Yes, clear all</button>
+            <button className="px-3 py-1 rounded bg-gray-200 text-gray-700" onClick={() => setShowWarning(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {toast && (
+        <div className="mt-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow">{toast}</div>
+      )}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
-  const settings = useStore((s) => s.settings);
-  const updateSettings = useStore((s) => s.updateSettings);
-  const [company, setCompany] = useState(settings.companyInfo);
-  const [preparer, setPreparer] = useState(settings.preparerName || '');
-
-  function handleSave() {
-    updateSettings({
-      ...settings,
-      companyInfo: company,
-      preparerName: preparer,
-    });
-  }
-
+  const router = useRouter();
   return (
-    <div className="max-w-xl mx-auto mt-8 p-6 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Company Information</h2>
-      <div className="space-y-3">
-        <label className="block">
-          <span className="text-sm">Company Name</span>
-          <input className="w-full border rounded px-2 py-1" value={company.name} onChange={e => setCompany({ ...company, name: e.target.value })} />
-        </label>
-        <label className="block">
-          <span className="text-sm">Address</span>
-          <input className="w-full border rounded px-2 py-1" value={company.address} onChange={e => setCompany({ ...company, address: e.target.value })} />
-        </label>
-        <label className="block">
-          <span className="text-sm">Contact Info</span>
-          <input className="w-full border rounded px-2 py-1" value={company.contact || ''} onChange={e => setCompany({ ...company, contact: e.target.value })} />
-        </label>
-        <label className="block">
-          <span className="text-sm">Brand Color</span>
-          <input className="w-32 border rounded px-2 py-1" type="color" value={company.brandColor} onChange={e => setCompany({ ...company, brandColor: e.target.value })} />
-        </label>
-        <label className="block">
-          <span className="text-sm">Logo (base64, optional)</span>
-          <input className="w-full border rounded px-2 py-1" value={company.logoBase64 || ''} onChange={e => setCompany({ ...company, logoBase64: e.target.value })} />
-        </label>
-      </div>
-      <h2 className="text-xl font-bold mt-6 mb-4">Prepared By</h2>
-      <label className="block mb-4">
-        <span className="text-sm">Name</span>
-        <input className="w-full border rounded px-2 py-1" value={preparer} onChange={e => setPreparer(e.target.value)} />
-      </label>
-      <button className="px-4 py-2 rounded bg-blue-600 text-white font-medium" onClick={handleSave}>Save</button>
+  <div className="flex flex-col h-full min-h-[80vh] p-8 bg-white rounded-xl shadow-lg">
+      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <ul className="space-y-4">
+        <li>
+          <button
+            className="w-full text-left px-4 py-3 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold"
+            onClick={() => router.push("/mycompany")}
+          >
+            My Company Profile
+          </button>
+        </li>
+        <li>
+          <BackupRestoreSettings />
+        </li>
+        {/* Add more settings options here */}
+      </ul>
     </div>
   );
 }

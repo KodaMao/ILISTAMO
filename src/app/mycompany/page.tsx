@@ -19,17 +19,20 @@ export default function MyCompanyPage() {
     reader.readAsDataURL(file);
   }
 
+  const [saved, setSaved] = useState(false);
   function handleSave() {
     updateSettings({
       ...settings,
       companyInfo: company,
       preparerName: preparer,
     });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold mb-6">My Company Profile</h2>
+  <div className="flex flex-col h-full min-h-[80vh] p-8 bg-white rounded-xl shadow-lg">
+      <h1 className="text-2xl font-bold mb-6">My Company Profile</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <label className="block mb-3">
@@ -70,6 +73,9 @@ export default function MyCompanyPage() {
         <input className="w-full border rounded px-3 py-2" value={preparer} onChange={e => setPreparer(e.target.value)} placeholder="Your name" />
       </div>
       <button className="px-5 py-2 rounded bg-blue-600 text-white font-semibold shadow" onClick={handleSave}>Save Company Info</button>
+      {saved && (
+        <div className="mt-4 text-green-600 font-medium">Company profile saved!</div>
+      )}
     </div>
   );
 }

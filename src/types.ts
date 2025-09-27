@@ -1,17 +1,12 @@
 export interface Client {
   id: string;
   name: string;
-  contactName?: string;
+  contact?: string;
   email?: string;
   address?: string;
+  company?: string;
 }
 
-export interface Project {
-  id: string;
-  clientId: string;
-  name: string;
-  description?: string;
-}
 
 export interface EstimateItem {
   id: string;
@@ -24,7 +19,7 @@ export interface EstimateItem {
 
 export interface Estimate {
   id: string;
-  projectId: string;
+  clientId: string;
   createdAt: number;
   name: string;
   items: EstimateItem[];
@@ -91,7 +86,6 @@ export interface ProfitMetrics {
 
 export interface AppData {
   clients: Client[];
-  projects: Project[];
   estimates: Estimate[];
   quotes: Quote[];
   settings: AppSettings;

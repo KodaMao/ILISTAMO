@@ -20,7 +20,7 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
   }, [previewUrl]);
   const quote = quotes.find((q) => q.id === quoteId);
   const estimate = useMemo(() => (quote ? estimates.find((e) => e.id === quote.estimateId) : undefined), [quotes, estimates, quote]);
-  const project = useMemo(() => (estimate ? projects.find((p) => p.id === estimate.projectId) : undefined), [projects, estimate]);
+  const project = useMemo(() => (estimate?.projectId ? projects.find((p) => p.id === estimate.projectId) : undefined), [projects, estimate]);
   const client = useMemo(() => (project ? clients.find((c) => c.id === project.clientId) : undefined), [clients, project]);
 
   if (!open) return null;

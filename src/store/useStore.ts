@@ -1,6 +1,6 @@
 'use client';
 import { create } from 'zustand';
-import type { AppData, Client, Estimate, EstimateItem, Project, Quote, QuoteItem, AppSettings } from '@/types';
+import type { AppData, Client, Estimate, EstimateItem, Quote, QuoteItem, AppSettings } from '@/types';
 import { loadData, saveData } from '@/lib/localForage';
 
 type State = AppData & {
@@ -12,8 +12,8 @@ type Actions = {
   addClient: (c: Omit<Client, 'id'>) => string;
   updateClient: (id: string, partial: Partial<Client>) => void;
   deleteClient: (id: string) => boolean;
-  addProject: (p: Omit<Project, 'id'>) => string;
   addEstimate: (e: Omit<Estimate, 'id' | 'createdAt'>) => string;
+  addQuote: (q: Omit<Quote, 'id' | 'createdAt'>) => string;
   updateEstimate: (id: string, partial: Partial<Estimate>) => void;
   updateEstimateItems: (id: string, items: EstimateItem[]) => void;
   createQuoteFromEstimate: (estimateId: string, name?: string) => string | null;
@@ -23,11 +23,11 @@ type Actions = {
   exportData: () => string;
   importData: (json: string) => Promise<void>;
   updateSettings: (partial: Partial<AppSettings>) => void;
+    clearAll: () => void;
 };
 
 const defaultState: AppData = {
   clients: [],
-  projects: [],
   estimates: [],
   quotes: [],
   settings: {
@@ -45,10 +45,19 @@ const defaultState: AppData = {
 };
 
 export const useStore = create<State & Actions>((set: (partial: Partial<State>) => void, get: () => State) => ({
+  addQuote: (q: Omit<Quote, 'id' | 'createdAt'>) => {
+    if (!q.estimateId) throw new Error('estimateId is required for Quote');
+    const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+    const quote: Quote = { id, createdAt: Date.now(), ...q };
+    const quotes = [...get().quotes, quote];
+    set({ quotes });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes, settings: get().settings });
+    return id;
+  },
   updateSettings: (partial: Partial<AppSettings>) => {
     const settings = { ...get().settings, ...partial };
     set({ settings });
-    saveData({ clients: get().clients, projects: get().projects, estimates: get().estimates, quotes: get().quotes, settings });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes: get().quotes, settings });
   },
   ...defaultState,
   initialized: false,
@@ -56,6 +65,10 @@ export const useStore = create<State & Actions>((set: (partial: Partial<State>) 
   // Helper to extract only serializable app data for persistence
   // Avoid saving actions/functions which cause DataCloneError in IndexedDB
   
+    clearAll: () => {
+      set({ ...defaultState });
+      saveData(defaultState);
+    },
 
   init: async () => {
     const data = await loadData();
@@ -71,46 +84,38 @@ export const useStore = create<State & Actions>((set: (partial: Partial<State>) 
     const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
     const clients = [...get().clients, { id, ...c }];
     set({ clients });
-    saveData({ clients, projects: get().projects, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
     return id;
   },
   updateClient: (id: string, partial: Partial<Client>) => {
     const clients = get().clients.map((x: Client) => (x.id === id ? { ...x, ...partial } : x));
     set({ clients });
-    saveData({ clients, projects: get().projects, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
   },
   deleteClient: (id: string) => {
-    const hasProjects = get().projects.some((p: Project) => p.clientId === id);
-    if (hasProjects) return false;
     const clients = get().clients.filter((x: Client) => x.id !== id);
     set({ clients });
-    saveData({ clients, projects: get().projects, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
     return true;
   },
-  addProject: (p: Omit<Project, 'id'>) => {
-    const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
-    const projects = [...get().projects, { id, ...p }];
-    set({ projects });
-    saveData({ clients: get().clients, projects, estimates: get().estimates, quotes: get().quotes, settings: get().settings });
-    return id;
-  },
   addEstimate: (e: Omit<Estimate, 'id' | 'createdAt'>) => {
+    if (!e.clientId) throw new Error('clientId is required for Estimate');
     const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
-    const estimate: Estimate = { id, createdAt: Date.now(), ...e } as Estimate;
+    const estimate: Estimate = { id, createdAt: Date.now(), ...e };
     const estimates = [...get().estimates, estimate];
     set({ estimates });
-    saveData({ clients: get().clients, projects: get().projects, estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates, quotes: get().quotes, settings: get().settings });
     return id;
   },
   updateEstimate: (id: string, partial: Partial<Estimate>) => {
     const estimates = get().estimates.map((est: Estimate) => (est.id === id ? { ...est, ...partial } : est));
     set({ estimates });
-    saveData({ clients: get().clients, projects: get().projects, estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates, quotes: get().quotes, settings: get().settings });
   },
   updateEstimateItems: (id: string, items: EstimateItem[]) => {
     const estimates = get().estimates.map((est: Estimate) => (est.id === id ? { ...est, items } : est));
     set({ estimates });
-    saveData({ clients: get().clients, projects: get().projects, estimates, quotes: get().quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates, quotes: get().quotes, settings: get().settings });
   },
 
   createQuoteFromEstimate: (estimateId: string, name?: string) => {
@@ -144,28 +149,28 @@ export const useStore = create<State & Actions>((set: (partial: Partial<State>) 
     };
     const quotes = [...get().quotes, quote];
     set({ quotes });
-    saveData({ clients: get().clients, projects: get().projects, estimates: get().estimates, quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes, settings: get().settings });
     return id;
   },
   updateQuote: (id: string, partial: Partial<Quote>) => {
     const quotes = get().quotes.map((q: Quote) => (q.id === id ? { ...q, ...partial } : q));
     set({ quotes });
-    saveData({ clients: get().clients, projects: get().projects, estimates: get().estimates, quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes, settings: get().settings });
   },
   updateQuoteItems: (id: string, items: QuoteItem[]) => {
     const quotes = get().quotes.map((q: Quote) => (q.id === id ? { ...q, items } : q));
     set({ quotes });
-    saveData({ clients: get().clients, projects: get().projects, estimates: get().estimates, quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes, settings: get().settings });
   },
   setQuoteStatus: (id: string, status: Quote['status']) => {
     const quotes = get().quotes.map((q: Quote) => (q.id === id ? { ...q, status } : q));
     set({ quotes });
-    saveData({ clients: get().clients, projects: get().projects, estimates: get().estimates, quotes, settings: get().settings });
+  saveData({ clients: get().clients, estimates: get().estimates, quotes, settings: get().settings });
   },
   exportData: () => {
     const data: AppData = {
       clients: get().clients,
-      projects: get().projects,
+  // projects removed
       estimates: get().estimates,
       quotes: get().quotes,
       settings: get().settings,
