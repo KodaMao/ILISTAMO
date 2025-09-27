@@ -1,63 +1,35 @@
 
-# IListaMo Specification (Guide)
+## IListaMo App Specification (Updated September 27, 2025)
 
-This document captures the core product spec. Keep it in sync with the codebase as features evolve.
+### Workflow Overview
+- The app is client/estimate/quote-centric. Projects are fully removed.
+- Users create estimates for clients, then generate quotes based on those estimates.
+- Quotes are fully editable, with per-item markup, category grouping, and analytics.
 
-# IListaMo Specification
+### Quote Editor UI
+- The quote editor page features:
+  - Editable quote number as the main title (left-aligned)
+  - Subheading: "Based on estimate: [estimate name]"
+  - Grouped items by category, with per-category subtotals
+  - Per-item markup controls (percentage or value)
+  - Original unit price and markup price columns
+  - Scrollable, modern, and clean UI with improved spacing and card appearance
+  - Notes and terms section
+  - Overview analytics at the bottom (totals, tax, discount, profit, etc.)
+  - Bottom action bar: Export Quote (PDF) and Save, with save notification
 
-## Overview
+### PDF Export
+- PDF export uses the quote number as the main title and in all relevant places
+- Calculations in the PDF match the UI (per-item markup, correct subtotals, etc.)
+- Export works without project data; only quote, estimate, and client are required
 
-IListaMo is a business management tool for managing clients, estimates, and quotes. Projects have been completely removed from the workflow. Users can create and track estimates directly for clients, and generate quotes from estimates. The dashboard provides a business pipeline overview, summary analytics, and quick access to recent activity.
+### Other Features
+- All references to project are removed from UI and logic
+- Quote ID is never shown to the user
+- All notifications and error messages are user-friendly
 
-## Key Features
-
-- Client management
-- Estimate creation (per client)
-- Quote generation (per estimate)
-- Dashboard with summary, analytics, and recent activity
-- Export to PDF
-
-## Data Model
-
-### Client
-- id
-- name
-- contactInfo
-
-### Estimate
-- id
-- clientId
-- items
-- total
-- createdAt
-
-### Quote
-- id
-- estimateId
-- price
-- status
-- createdAt
-
-## Workflow
-
-1. User creates a client.
-2. User creates an estimate for a client.
-3. User generates a quote from an estimate (must select an estimate).
-4. User can export quotes/estimates as PDF.
-
-## Dashboard
-
-The dashboard provides:
-- Summary statistics (total clients, estimates, quotes, profit analytics)
-- Recent activity (latest estimates and quotes)
-- Quick links to create new clients, estimates, and quotes
-- Search and filter for clients, estimates, and quotes
-
-## UI/UX
-
-- Sidebar navigation: Dashboard, Clients, Estimates, Quotes, Settings
-- Modal forms for creating clients, estimates, and quotes
-- Tables for listing clients, estimates, and quotes
+---
+_This spec reflects the state of the app as of the 'before-refactor' branch._
 - Dashboard summary cards, recent activity, and quick links
 - Estimate editor: checkboxes for item selection, select-all per category, and 'Clear All' button for removing all items
 

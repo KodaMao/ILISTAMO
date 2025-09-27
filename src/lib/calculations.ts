@@ -4,14 +4,28 @@ export function computeEstimateCost(estimate: Estimate): number {
   return estimate.items.reduce((sum, it) => sum + it.quantity * it.costPerUnit, 0);
 }
 
-function effectiveUnitPrice(unitPrice: number, markupPercent?: number) {
-  return unitPrice * (1 + (markupPercent || 0) / 100);
+
+function getOriginalUnitPrice(it: any, sourceEstimate?: Estimate): number {
+  if (!sourceEstimate) return 0;
+  const estItem = sourceEstimate.items.find(ei => ei.id === it.id);
+  return estItem ? estItem.costPerUnit : 0;
+}
+
+function effectiveUnitPrice(it: any, sourceEstimate?: Estimate) {
+  const base = getOriginalUnitPrice(it, sourceEstimate);
+  const markupType = it.markupType || 'percentage';
+  const markupValue = it.markupValue ?? 0;
+  if (markupType === 'percentage') {
+    return base * (1 + markupValue / 100);
+  } else {
+    return base + markupValue;
+  }
 }
 
 export function computeQuoteMetrics(quote: Quote, sourceEstimate?: Estimate): ProfitMetrics {
   const totalCost = sourceEstimate ? computeEstimateCost(sourceEstimate) : 0;
-  // compute amount using marked-up unit prices if markupPercent present
-  const totalAmount = quote.items.reduce((sum, it) => sum + it.quantity * effectiveUnitPrice(it.unitPrice, quote.markupPercent), 0);
+  // compute amount using per-item markup and original unit price from estimate
+  const totalAmount = quote.items.reduce((sum, it) => sum + it.quantity * effectiveUnitPrice(it, sourceEstimate), 0);
   const discountAmount = quote.discountType === 'amount' ? quote.discount : (totalAmount * quote.discount) / 100;
   const subtotal = Math.max(totalAmount - discountAmount, 0);
   const taxAmount = (subtotal * (quote.taxRate || 0)) / 100;

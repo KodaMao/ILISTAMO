@@ -20,16 +20,16 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
   }, [previewUrl]);
   const quote = quotes.find((q) => q.id === quoteId);
   const estimate = useMemo(() => (quote ? estimates.find((e) => e.id === quote.estimateId) : undefined), [quotes, estimates, quote]);
-  const project = useMemo(() => (estimate?.projectId ? projects.find((p) => p.id === estimate.projectId) : undefined), [projects, estimate]);
-  const client = useMemo(() => (project ? clients.find((c) => c.id === project.clientId) : undefined), [clients, project]);
+  // Find client directly from estimate.clientId (no project dependency)
+  const client = useMemo(() => (estimate ? clients.find((c) => c.id === estimate.clientId) : undefined), [clients, estimate]);
 
   if (!open) return null;
-  if (!quote || !estimate || !project || !client) {
+  if (!quote || !estimate || !client) {
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
         <div className="bg-white p-4 rounded shadow max-w-md w-full">
-          <div className="font-medium mb-2">ExportaMo</div>
-          <div className="text-red-600 text-sm">Missing data to export this quote.</div>
+          <div className="font-medium mb-2">Export Quote</div>
+          <div className="text-red-600 text-sm">Missing required data to export this quote. Please ensure the quote, estimate, and client exist.</div>
           <div className="mt-4 flex justify-end"><button className="px-3 py-1 rounded border" onClick={onClose}>Close</button></div>
         </div>
       </div>
@@ -37,7 +37,7 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
   }
 
   function handleSelect(templateId: string) {
-    if (!quote || !estimate || !project || !client) return;
+  if (!quote || !estimate || !client) return;
     // reset previous preview
     setPdfBlob(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -50,7 +50,7 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
       <div className="bg-white p-8 rounded shadow max-w-3xl w-full">
-        <div className="font-medium mb-2">ExportaMo</div>
+  <div className="font-medium mb-2">Export Quote</div>
         {!busy && !previewUrl && (
           <>
             <p className="text-sm text-gray-600 mb-4">Select a template to generate the PDF:</p>
@@ -82,7 +82,7 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
             templateId={selectedTemplateId}
             quote={quote}
             estimate={estimate}
-            project={project}
+            // project removed
             client={client}
             onDone={(blob: Blob) => {
               const url = URL.createObjectURL(blob);

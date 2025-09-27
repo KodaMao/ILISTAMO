@@ -32,6 +32,8 @@ export interface QuoteItem {
   quantity: number;
   unit: string;
   unitPrice: number;
+  markupType?: 'percentage' | 'amount';
+  markupValue?: number;
 }
 
 export interface CompanyInfo {

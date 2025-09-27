@@ -18,7 +18,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
   templateId: string;
   quote: Quote;
   estimate: Estimate;
-  project: Project;
+  project?: Project;
   client: Client;
   onDone: (blob: Blob) => void;
 }) {
@@ -84,7 +84,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(22);
           doc.setTextColor(45,55,72);
-          doc.text(quote.name || 'Quotation', centerX, margin + 72, { align: 'center' });
+          doc.text(quote.quoteNumber || quote.name || 'Quotation', centerX, margin + 72, { align: 'center' });
           // Thin brand underline under title
           doc.setDrawColor(...brandRGB);
           doc.setLineWidth(1);
@@ -181,7 +181,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
           doc.setFontSize(11);
           doc.setTextColor(...PRO.body);
           // Two-column rows
-          doc.text(`Quotation: ${quote.name || ''}`, margin, margin + 172);
+          doc.text(`Quotation: ${quote.quoteNumber || quote.name || ''}`, margin, margin + 172);
           doc.text(`Date: ${new Date(quote.createdAt).toLocaleDateString()}`, rightX, margin + 172, { align: 'right' });
           doc.text(`Quote Number: ${quote.quoteNumber}`, margin, margin + 186);
           doc.text(`Valid Until: ${validUntil}`, rightX, margin + 186, { align: 'right' });
@@ -217,7 +217,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
           doc.setFontSize(20);
           doc.text(companyInfo.name || '', nameX, 30);
           doc.setFontSize(16);
-          doc.text('QUOTATION', rightX, 30, { align: 'right' });
+          doc.text(quote.quoteNumber || quote.name || 'QUOTATION', rightX, 30, { align: 'right' });
 
           // Optional contact lines in banner bottom
           doc.setFont('helvetica', 'normal');
@@ -303,9 +303,25 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
         let head: string[][];
         let body: (string | number)[][];
         let columnStyles: any;
+        // Use per-item markup and original unit price from estimate, matching computeQuoteMetrics
+        function getOriginalUnitPrice(it: any, sourceEstimate?: Estimate): number {
+          if (!sourceEstimate) return 0;
+          const estItem = sourceEstimate.items.find((ei: any) => ei.id === it.id);
+          return estItem ? estItem.costPerUnit : 0;
+        }
+        function effectiveUnitPrice(it: any, sourceEstimate?: Estimate) {
+          const base = getOriginalUnitPrice(it, sourceEstimate);
+          const markupType = it.markupType || 'percentage';
+          const markupValue = it.markupValue ?? 0;
+          if (markupType === 'percentage') {
+            return base * (1 + markupValue / 100);
+          } else {
+            return base + markupValue;
+          }
+        }
         if (templateId === 'modern' || templateId === 'classic') {
           const rows = items.map((it) => {
-            const up = it.unitPrice * (1 + (quote.markupPercent || 0) / 100);
+            const up = effectiveUnitPrice(it, estimate);
             return [it.description || '—', String(it.quantity), it.unit || '', fmt(up), fmt(it.quantity * up)];
           });
           head = [['Description', 'Qty', 'Unit', 'Unit Price', 'Line Total']];
@@ -320,7 +336,7 @@ export function GeneratePDF({ templateId, quote, estimate, project, client, onDo
         } else {
           // Bold Corporate: include an Item # column and stripe rows with light blue
           const rows = items.map((it, idx) => {
-            const up = it.unitPrice * (1 + (quote.markupPercent || 0) / 100);
+            const up = effectiveUnitPrice(it, estimate);
             return [String(idx + 1), it.description || '—', String(it.quantity), it.unit || '', fmt(up), fmt(it.quantity * up)];
           });
           head = [['Item', 'Description', 'Qty', 'Unit', 'Unit Price', 'Line Total']];
