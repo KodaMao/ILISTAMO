@@ -103,7 +103,7 @@ export function FeedbackButton() {
                   </div>
                 </form>
                 <div className="mt-4 text-xs text-gray-500 text-center">
-                  Or <a href="https://kodamao.github.io/portfolio2025/" target="_blank" rel="noopener noreferrer" className="underline text-blue-700">contact the developer</a>
+                  Or <a href="https://portfolio2025-lyart.vercel.app/" target="_blank" rel="noopener noreferrer" className="underline text-blue-700">contact the developer</a>
                 </div>
               </div>
             </section>
