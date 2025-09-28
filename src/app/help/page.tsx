@@ -62,7 +62,7 @@ export default function HelpPage() {
             <div className="flex-1">
               <div className="font-semibold text-blue-800 mb-1">We want to hear from you!</div>
               <div className="text-blue-900 text-base mb-2">Click the <span className="font-semibold">Feedback</span> button in the navigation bar to send feedback, suggestions, or contact the developer directly.</div>
-              <div className="text-blue-900 text-base">For more help, use the feedback form or visit <a href="https://kodamao.github.io/portfolio2025/" className="underline text-blue-700" target="_blank" rel="noopener noreferrer">the developer's site</a>.</div>
+              <div className="text-blue-900 text-base">For more help, use the feedback form or visit <a href="https://portfolio2025-lyart.vercel.app/" className="underline text-blue-700" target="_blank" rel="noopener noreferrer">the developer's site</a>.</div>
             </div>
           </div>
         </section>
