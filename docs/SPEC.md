@@ -24,10 +24,13 @@ The quote editor page features:
   - Overview analytics at the bottom (totals, tax, discount, profit, etc.)
   - Bottom action bar: Export Quote (PDF) and Save, with save notification
 
-### PDF Export
+
+### PDF Export & Currency
 - PDF export uses the quote number as the main title and in all relevant places
 - Calculations in the PDF match the UI (per-item markup, correct subtotals, etc.)
 - Export works without project data; only quote, estimate, and client are required
+- Currency is globally configurable in Settings. All monetary values in the UI and PDF use the selected currency (USD, EUR, PHP, etc.).
+- For PHP, the PDF displays 'PHP' instead of the peso symbol for compatibility.
 
 ### Other Features
 - All references to project are removed from UI, logic, and codebase
@@ -44,9 +47,11 @@ _This spec reflects the state of the app as of the September 28, 2025 refactor. 
 
 - Export estimates and quotes to PDF using customizable templates
 
-## Settings
 
+## Settings
 - Company info, branding, and PDF template selection
+- Global currency selector (USD, EUR, PHP, etc.)
+- Changing currency shows a notification and updates all monetary formatting instantly.
 
 ## Tech Stack
 

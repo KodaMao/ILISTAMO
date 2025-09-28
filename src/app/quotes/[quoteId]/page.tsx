@@ -3,7 +3,7 @@ import { QuoteEditor } from '@/components/quotes/QuoteEditor';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function QuoteEditorPage({ params }: { params: { quoteId: string } }) {
+export default function Page({ params }: { params: { quoteId: string } }) {
   const { quoteId } = params;
   return (
     <div className="p-6">

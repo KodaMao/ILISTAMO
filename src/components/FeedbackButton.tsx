@@ -1,6 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { useForm, ValidationError } from '@formspree/react';
+import { MessageCircle } from 'lucide-react';
 
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
@@ -9,11 +11,11 @@ export function FeedbackButton() {
   return (
     <>
       <button
-        className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200 font-semibold mt-4 shadow-sm border border-blue-100 transition"
+        className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200 font-semibold mt-4 shadow-sm border border-blue-100 transition flex items-center justify-center gap-2"
         onClick={() => setOpen(true)}
         aria-label="Send feedback"
       >
-        <span className="mr-2">💬</span> Feedback
+        <MessageCircle className="w-5 h-5 mr-1" /> Feedback
       </button>
       {open && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center backdrop-blur-sm">
@@ -33,7 +35,9 @@ export function FeedbackButton() {
           ) : (
             <section className="flex items-center justify-center w-full">
               <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 max-w-md w-full border border-blue-50">
-                <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">Send us your thoughts</h1>
+                <h1 className="text-2xl font-bold mb-6 text-center text-blue-700 flex items-center justify-center gap-2">
+                  <MessageCircle className="w-6 h-6 text-blue-500" /> Send us your thoughts
+                </h1>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-700">
@@ -99,7 +103,7 @@ export function FeedbackButton() {
                   </div>
                 </form>
                 <div className="mt-4 text-xs text-gray-500 text-center">
-                  Or <a href="https://your-portfolio.com" target="_blank" rel="noopener noreferrer" className="underline text-blue-700">contact the developer</a>
+                  Or <a href="https://kodamao.github.io/portfolio2025/" target="_blank" rel="noopener noreferrer" className="underline text-blue-700">contact the developer</a>
                 </div>
               </div>
             </section>

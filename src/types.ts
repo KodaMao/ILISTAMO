@@ -67,6 +67,7 @@ export interface AppSettings {
   defaultExpiryDays: number;
   companyInfo: CompanyInfo;
   preparerName?: string;
+  currency?: string; // ISO 4217 currency code, e.g. 'USD', 'EUR'
 }
 
 export interface Template {

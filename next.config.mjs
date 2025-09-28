@@ -1,8 +1,8 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
-  // typedRoutes: true, // Disabled due to build/type issues with dynamic routes
+  // typedRoutes is not supported in Next.js 14, remove if error persists
+  // typedRoutes: true,
   experimental: {
     optimizePackageImports: [
       'lucide-react',

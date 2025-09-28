@@ -23,8 +23,10 @@ export function QuoteEditor({ quoteId }: { quoteId: string }) {
   const setQuoteStatus = useStore((s) => s.setQuoteStatus);
   if (!quote) return <div className="text-red-600">Quote not found</div>;
 
+  const { settings } = useStore();
+  const currency = settings.currency || 'USD';
   const metrics = computeQuoteMetrics(quote, estimate);
-  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 });
   const profitPct = metrics.subtotal > 0 ? (metrics.totalProfit / metrics.subtotal) * 100 : 0;
   const marginColor = metrics.totalProfit < 0 ? 'text-red-600' : profitPct < 5 ? 'text-amber-600' : 'text-emerald-600';
   const barColor = metrics.totalProfit < 0 ? 'bg-red-500' : profitPct < 5 ? 'bg-amber-500' : 'bg-emerald-500';
@@ -110,7 +112,7 @@ export function QuoteEditor({ quoteId }: { quoteId: string }) {
               {/* Total calculation below categories */}
               <div className="mt-4 flex justify-end text-lg font-bold">
                 <div>
-                  Total: {allCategories.reduce((sum, cat) => {
+                  Total: {fmt.format(allCategories.reduce((sum, cat) => {
                     return sum + itemsByCategory[cat].reduce((s, it) => {
                       let base = 0;
                       if (estimate) {
@@ -127,7 +129,7 @@ export function QuoteEditor({ quoteId }: { quoteId: string }) {
                       }
                       return s + it.quantity * price;
                     }, 0);
-                  }, 0).toFixed(2)}
+                  }, 0))}
                 </div>
               </div>
                 

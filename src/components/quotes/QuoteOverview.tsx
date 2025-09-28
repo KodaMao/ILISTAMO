@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Quote, Estimate } from '@/types';
 import { computeQuoteMetrics } from '@/lib/calculations';
+import { useStore } from '@/store/useStore';
 
 interface QuoteOverviewProps {
   quote: Quote;
@@ -8,8 +10,10 @@ interface QuoteOverviewProps {
 }
 
 export const QuoteOverview: React.FC<QuoteOverviewProps> = ({ quote, estimate }) => {
+  const { settings } = useStore();
+  const currency = settings.currency || 'USD';
   const metrics = computeQuoteMetrics(quote, estimate);
-  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 });
   const profitPct = metrics.subtotal > 0 ? (metrics.totalProfit / metrics.subtotal) * 100 : 0;
   const marginColor = metrics.totalProfit < 0 ? 'text-red-600' : profitPct < 5 ? 'text-amber-600' : 'text-emerald-600';
   const barColor = metrics.totalProfit < 0 ? 'bg-red-500' : profitPct < 5 ? 'bg-amber-500' : 'bg-emerald-500';

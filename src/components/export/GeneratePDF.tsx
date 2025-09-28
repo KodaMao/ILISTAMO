@@ -5,9 +5,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Client, Estimate, Quote } from '@/types';
 import { computeQuoteMetrics } from '@/lib/calculations';
+
+
 import { useStore } from '@/store/useStore';
 
-const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const hexToRgb = (hex: string): [number, number, number] => {
   const clean = hex.replace('#', '');
   const num = parseInt(clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean, 16);
@@ -22,6 +23,16 @@ export function GeneratePDF({ templateId, quote, estimate, client, onDone }: {
   onDone: (blob: Blob) => void;
 }) {
   const { settings } = useStore.getState();
+  const currency = settings.currency || 'USD';
+  // Fix for PHP symbol not supported by jsPDF: replace with 'PHP'
+  const fmt = (n: number) => {
+    let str = n.toLocaleString(undefined, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (currency === 'PHP') {
+      // Replace any non-ASCII currency symbol (₱) with 'PHP '
+      str = str.replace(/[₱±]/g, 'PHP ');
+    }
+    return str;
+  };
   const companyInfo = settings.companyInfo || quote.companyInfo;
   const preparerName = settings.preparerName || '';
   const started = useRef(false);
@@ -108,7 +119,10 @@ export function GeneratePDF({ templateId, quote, estimate, client, onDone }: {
           doc.setTextColor(74,85,104);
           doc.text([client.name, client.address || '', client.email || ''].filter(Boolean) as string[], margin, margin + 154);
           const from = [companyInfo.name, companyInfo.address, companyInfo.contact].filter(Boolean) as string[];
-          doc.text(from, rightX - 60, margin + 154, { align: 'right' });
+          // Right-align each line of the 'From' block
+          from.forEach((line, i) => {
+            doc.text(line, rightX, margin + 154 + i * 14, { align: 'right' });
+          });
 
           doc.setDrawColor(226,232,240);
           doc.line(margin, margin + 198, rightX, margin + 198);
@@ -152,7 +166,8 @@ export function GeneratePDF({ templateId, quote, estimate, client, onDone }: {
           doc.setLineWidth(1);
           doc.line(margin, margin + 62, rightX, margin + 62);
 
-          // CUSTOMER
+
+          // CUSTOMER (left)
           doc.setFont('times', 'bold');
           doc.setFontSize(12);
           doc.setTextColor(...PRO.darkBlue);
@@ -166,6 +181,21 @@ export function GeneratePDF({ templateId, quote, estimate, client, onDone }: {
             client.email ? `Email: ${client.email}` : '',
           ].filter(Boolean) as string[];
           doc.text(customerLines, margin, margin + 100);
+
+          // FROM (right)
+          doc.setFont('times', 'bold');
+          doc.setFontSize(12);
+          doc.setTextColor(...PRO.darkBlue);
+          doc.text('FROM', rightX, margin + 84, { align: 'right' });
+          doc.setFont('times', 'normal');
+          doc.setFontSize(11);
+          doc.setTextColor(...PRO.body);
+          const fromLines = [
+            companyInfo.name,
+            companyInfo.address || '',
+            companyInfo.contact || '',
+          ].filter(Boolean) as string[];
+          doc.text(fromLines, rightX, margin + 100, { align: 'right' });
 
           // Light divider
           doc.setDrawColor(...PRO.lightGray);

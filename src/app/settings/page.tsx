@@ -51,10 +51,27 @@ function BackupRestoreSettings() {
   );
 }
 
+
+
 export default function SettingsPage() {
   const router = useRouter();
+  const { settings, updateSettings } = useStore();
+  const [showCurrencyToast, setShowCurrencyToast] = useState(false);
+  const currencyOptions = [
+    { code: 'USD', label: 'US Dollar ($)' },
+    { code: 'EUR', label: 'Euro (€)' },
+    { code: 'GBP', label: 'British Pound (£)' },
+    { code: 'JPY', label: 'Japanese Yen (¥)' },
+    { code: 'AUD', label: 'Australian Dollar (A$)' },
+    { code: 'CAD', label: 'Canadian Dollar (C$)' },
+    { code: 'CHF', label: 'Swiss Franc (Fr)' },
+    { code: 'CNY', label: 'Chinese Yuan (¥)' },
+    { code: 'INR', label: 'Indian Rupee (₹)' },
+    { code: 'PHP', label: 'Philippine Peso (₱)' },
+    // Add more as needed
+  ];
   return (
-  <div className="flex flex-col h-full min-h-[80vh] p-8 bg-white rounded-xl shadow-lg">
+    <div className="flex flex-col h-full min-h-[80vh] p-8 bg-white rounded-xl shadow-lg">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
       <ul className="space-y-4">
         <li>
@@ -66,10 +83,31 @@ export default function SettingsPage() {
           </button>
         </li>
         <li>
+          <label className="block mb-1 font-medium text-gray-700">Currency</label>
+          <select
+            className="w-full px-4 py-2 border border-blue-100 rounded-lg bg-blue-50 text-blue-700 font-semibold focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none"
+            value={settings.currency || 'USD'}
+            onChange={e => {
+              updateSettings({ currency: e.target.value });
+              setShowCurrencyToast(true);
+              setTimeout(() => setShowCurrencyToast(false), 2000);
+            }}
+          >
+            {currencyOptions.map(opt => (
+              <option key={opt.code} value={opt.code}>{opt.label}</option>
+            ))}
+          </select>
+        </li>
+        <li>
           <BackupRestoreSettings />
         </li>
         {/* Add more settings options here */}
       </ul>
+      {showCurrencyToast && (
+        <div className="fixed bottom-8 right-8 z-50 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
+          Currency updated!
+        </div>
+      )}
     </div>
   );
 }

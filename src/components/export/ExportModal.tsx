@@ -62,18 +62,7 @@ export function ExportModal({ quoteId, open, onClose }: { quoteId: string; open:
                 </button>
               ))}
             </div>
-            <div className="mt-4 border-t pt-3">
-              <div className="text-xs text-gray-500 mb-2">Having trouble? Use your browser’s Print to PDF:</div>
-              <button
-                className="px-3 py-1 rounded border"
-                onClick={() => {
-                  window.open(`/quotes/${quote.id}/print`, '_blank', 'noopener');
-                  onClose();
-                }}
-              >
-                Print (HTML) → Save as PDF
-              </button>
-            </div>
+            {/* Removed Print to PDF fallback and message */}
           </>
         )}
         {busy && <div className="text-sm text-gray-700">Generating PDF…</div>}

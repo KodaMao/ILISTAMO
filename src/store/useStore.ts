@@ -41,6 +41,7 @@ const defaultState: AppData = {
       contact: '',
     },
     preparerName: '',
+    currency: 'USD',
   },
 };
 

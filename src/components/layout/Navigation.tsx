@@ -45,7 +45,7 @@ export function Navigation() {
   ];
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r flex flex-col py-8 px-4 shadow-lg">
+    <aside className="w-64 min-h-screen bg-white border-r flex flex-col py-8 px-4 shadow-lg sticky top-0 h-screen z-30">
       <Link href="/" className="font-bold text-blue-700 text-xl mb-8">IListaMo</Link>
       <nav className="flex flex-col gap-2 text-base text-gray-700 flex-1">
         {navLinks.map(link => (

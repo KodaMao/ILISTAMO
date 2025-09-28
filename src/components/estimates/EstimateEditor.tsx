@@ -8,6 +8,8 @@ import { FilePlus2, Plus, Trash2, Copy, ChevronDown, ChevronRight } from 'lucide
 export function EstimateEditor({ estimateId }: { estimateId: string }) {
   const router = useRouter();
   const estimate = useStore((s) => s.estimates.find((e) => e.id === estimateId));
+    const currency = useStore(s => s.settings.currency || 'USD');
+    const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 });
   const updateEstimateItems = useStore((s) => s.updateEstimateItems);
   const updateEstimate = useStore((s) => s.updateEstimate);
   const createQuoteFromEstimate = useStore((s) => s.createQuoteFromEstimate);
@@ -44,6 +46,7 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
     });
   }, [estimate, selected]);
 
+  // ...existing code...
   if (!estimate) return <div className="text-red-600">Estimate not found</div>;
   const setItems = (items: EstimateItem[]) => updateEstimateItems(estimateId, items);
   function newItem(): EstimateItem {
@@ -158,7 +161,7 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
                             <input className="w-full border px-2 py-1 rounded" type="number" min={0} step={0.01} value={it.costPerUnit} onChange={(e) => { const items = [...estimate.items]; items[globalIdx] = { ...it, costPerUnit: Number(e.target.value) }; setItems(items); }} placeholder="Cost/Unit" />
                           </div>
                           <div className="w-32 px-1 text-right tabular-nums">
-                            {(it.quantity * it.costPerUnit).toFixed(2)}
+                     {fmt.format(it.quantity * it.costPerUnit)}
                           </div>
                         </div>
                       );
@@ -184,7 +187,9 @@ export function EstimateEditor({ estimateId }: { estimateId: string }) {
       </div>
       <div className="mt-2 flex justify-end text-lg font-bold">
         <div>
-          Total: {allCategories.reduce((sum, cat) => sum + itemsByCategory[cat].reduce((s, it) => s + it.quantity * it.costPerUnit, 0), 0).toFixed(2)}
+            Total: {fmt.format(
+            allCategories.reduce((sum, cat) => sum + itemsByCategory[cat].reduce((s, it) => s + it.quantity * it.costPerUnit, 0), 0)
+          )}
         </div>
       </div>
       {/* Grouped action bar below table */}
